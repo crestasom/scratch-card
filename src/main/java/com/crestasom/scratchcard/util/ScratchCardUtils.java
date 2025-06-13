@@ -1,29 +1,41 @@
 
 package com.crestasom.scratchcard.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.crestasom.scratchcard.config.ConfigReader;
 import com.crestasom.scratchcard.config.GameConfig;
 import com.crestasom.scratchcard.config.SymbolProbability;
 import com.crestasom.scratchcard.entity.CurrentMatrix;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * @author som.shrestha
- *
- */
 @Slf4j
 public class ScratchCardUtils {
-    private static final int rowNum = 3;
-    private static final int colNum = 3;
+    private static int rowNum = 3;
+    private static int colNum = 3;
     private static Random random = new Random();
-    private static final int maxBonusSymbol = 3;
+    private static int maxBonusSymbol = 3;
 
+    public static GameConfig loadConfig() throws IOException {
+        rowNum = ConfigReader.getInt("row.num");
+        colNum = ConfigReader.getInt("col.num");
+        maxBonusSymbol = ConfigReader.getInt("max.bonus.symbol");
+        ObjectMapper mapper = new ObjectMapper();
+        try (InputStream is = ScratchCardUtils.class.getResourceAsStream("/config.json")) {
+            if (is == null) {
+                throw new IOException("Config file not found: config.json");
+            }
+            return mapper.readValue(is, GameConfig.class);
+        }
+    }
 
     public static CurrentMatrix initMatrix(GameConfig gameConfig) {
         CurrentMatrix matrix = new CurrentMatrix(rowNum, colNum);
@@ -82,7 +94,8 @@ public class ScratchCardUtils {
                 all.add(new int[] {r, c});
             }
         }
+        int numberOfBonusSymbol = random.nextInt(maxBonusSymbol + 1);
         Collections.shuffle(all, random);
-        return all.subList(0, maxBonusSymbol);
+        return all.subList(0, numberOfBonusSymbol);
     }
 }
