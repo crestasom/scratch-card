@@ -1,11 +1,14 @@
 
 package com.crestasom.scratchcard.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import com.crestasom.scratchcard.config.GameConfig;
-import com.crestasom.scratchcard.config.StandardSymbolProbability;
+import com.crestasom.scratchcard.config.SymbolProbability;
 import com.crestasom.scratchcard.entity.CurrentMatrix;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,26 +22,21 @@ public class ScratchCardUtils {
     private static final int rowNum = 3;
     private static final int colNum = 3;
     private static Random random = new Random();
-
+    private static final int maxBonusSymbol = 3;
 
 
     public static CurrentMatrix initMatrix(GameConfig gameConfig) {
         CurrentMatrix matrix = new CurrentMatrix(rowNum, colNum);
         gameConfig.getProbabilities().getStandardSymbols().stream()
-                .forEach(g -> initCurrentSymbol(g, matrix, gameConfig));
-        for (int i = 0; i < rowNum; i++) {
-            for (int j = 0; j < colNum; j++) {
-
-            }
-        }
+                .forEach(g -> initCurrentSymbol(g, matrix, gameConfig, g.getRow(), g.getColumn()));
         return matrix;
     }
 
-    public static void initCurrentSymbol(StandardSymbolProbability symbolProbability, CurrentMatrix matrix,
-            GameConfig gameConfig) {
 
-        int row = symbolProbability.getRow();
-        int column = symbolProbability.getColumn();
+    public static void initCurrentSymbol(SymbolProbability symbolProbability, CurrentMatrix matrix,
+            GameConfig gameConfig, int row, int column) {
+
+
         log.debug("init current symbol for [{}][{}]", row + 1, column + 1);
         int totalWeight = symbolProbability.getSymbols().values().stream().mapToInt(Integer::intValue).sum();
         int rand = random.nextInt(totalWeight);
@@ -55,11 +53,36 @@ public class ScratchCardUtils {
         }
 
         if (symbol == null) {
-            throw new RuntimeException(String.format("cannot init symbol for %d %d", symbolProbability.getRow() + 1,
-                    symbolProbability.getColumn() + 1));
+            throw new RuntimeException(String.format("cannot init symbol for %d %d", row + 1, column + 1));
         }
         log.debug("setting [{}] in [{}][{}]", symbol, row + 1, column + 1);
         matrix.setValue(row, column, symbol);
 
+    }
+
+
+
+    public static void addBonusSymbol(GameConfig gameConfig, CurrentMatrix currentMatrix) {
+        List<int[]> bonusPositions = pickBonusPositions(rowNum, colNum);
+        gameConfig.getProbabilities().getBonusSymbols();
+        bonusPositions.forEach(b -> {
+            int r = b[0];
+            int c = b[1];
+            initCurrentSymbol(gameConfig.getProbabilities().getBonusSymbols(), currentMatrix, gameConfig, r, c);
+        });
+    }
+
+    public static List<int[]> pickBonusPositions(int rows, int cols) {
+        if (maxBonusSymbol > rows * cols) {
+            throw new IllegalArgumentException("Cannot place more bonus symbols than cells");
+        }
+        List<int[]> all = new ArrayList<>(rows * cols);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                all.add(new int[] {r, c});
+            }
+        }
+        Collections.shuffle(all, random);
+        return all.subList(0, maxBonusSymbol);
     }
 }

@@ -22,6 +22,8 @@ public class MainApp {
         log.debug("init matrix");
         CurrentMatrix matrix = ScratchCardUtils.initMatrix(gameConfig);
         log.debug("matrix {}", matrix);
+        ScratchCardUtils.addBonusSymbol(gameConfig, matrix);
+        log.debug("matrix after adding bonus {}", matrix);
     }
 
     public GameConfig loadConfig() throws IOException {
