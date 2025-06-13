@@ -58,8 +58,8 @@ public class ScratchCardUtils {
         for (Map.Entry<String, Integer> entry : symbolProbability.getSymbols().entrySet()) {
             cumulativeWt += entry.getValue();
             if (rand < cumulativeWt) {
-                log.debug("symbol to be init [{}]", symbol);
                 symbol = entry.getKey();
+                log.debug("symbol to be init [{}]", symbol);
                 break;
             }
         }
@@ -76,6 +76,7 @@ public class ScratchCardUtils {
 
     public static void addBonusSymbol(GameConfig gameConfig, CurrentMatrix currentMatrix) {
         List<int[]> bonusPositions = pickBonusPositions(rowNum, colNum);
+        log.debug("bonusPositions [{}]", bonusPositions);
         gameConfig.getProbabilities().getBonusSymbols();
         bonusPositions.forEach(b -> {
             int r = b[0];
