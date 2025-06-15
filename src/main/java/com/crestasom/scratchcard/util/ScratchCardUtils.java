@@ -18,7 +18,7 @@ import com.crestasom.scratchcard.config.GameConfig;
 import com.crestasom.scratchcard.config.ScratchCardConstants;
 import com.crestasom.scratchcard.config.SymbolProbability;
 import com.crestasom.scratchcard.config.WinCombination;
-import com.crestasom.scratchcard.entity.CurrentMatrix;
+import com.crestasom.scratchcard.entity.GameState;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ScratchCardUtils {
     private static int rowNum = 3;
     private static int colNum = 3;
-    private static final ThreadLocalRandom random = ThreadLocalRandom.current();
     private static int maxBonusSymbol = 3;
 
     public static GameConfig loadConfig(String filePath) throws IOException {
@@ -43,8 +42,8 @@ public class ScratchCardUtils {
         return mapper.readValue(file, GameConfig.class);
     }
 
-    public static CurrentMatrix initMatrix(GameConfig gameConfig) {
-        CurrentMatrix matrix = new CurrentMatrix(rowNum, colNum);
+    public static GameState initMatrix(GameConfig gameConfig) {
+        GameState matrix = new GameState(rowNum, colNum);
         gameConfig.getProbabilities().getStandardSymbols().stream()
                 .forEach(g -> initCurrentSymbol(g, matrix, gameConfig, g.getRow(), g.getColumn(), false));
         return matrix;
@@ -63,7 +62,7 @@ public class ScratchCardUtils {
     }
 
 
-    public static void initCurrentSymbol(SymbolProbability symbolProbability, CurrentMatrix matrix,
+    public static void initCurrentSymbol(SymbolProbability symbolProbability, GameState matrix,
             GameConfig gameConfig, int row, int column, Boolean isBonus) {
 
         log.debug("init current symbol for [{}][{}]", row + 1, column + 1);
@@ -82,13 +81,13 @@ public class ScratchCardUtils {
 
     }
 
-    public static void addBonusSymbol(GameConfig gameConfig, CurrentMatrix currentMatrix) {
+    public static void addBonusSymbol(GameConfig gameConfig, GameState gameState) {
         List<int[]> bonusPositions = pickBonusPositions(rowNum, colNum);
         log.debug("bonusPositions [{}]", bonusPositions);
         bonusPositions.forEach(b -> {
             int r = b[0];
             int c = b[1];
-            initCurrentSymbol(gameConfig.getProbabilities().getBonusSymbols(), currentMatrix, gameConfig, r, c, true);
+            initCurrentSymbol(gameConfig.getProbabilities().getBonusSymbols(), gameState, gameConfig, r, c, true);
         });
     }
 
@@ -102,13 +101,13 @@ public class ScratchCardUtils {
                 all.add(new int[] {r, c});
             }
         }
-        int numberOfBonusSymbol = random.nextInt(maxBonusSymbol + 1);
-        Collections.shuffle(all, random);
+        int numberOfBonusSymbol = ThreadLocalRandom.current().nextInt(maxBonusSymbol + 1);
+        Collections.shuffle(all, ThreadLocalRandom.current());
         return all.subList(0, numberOfBonusSymbol);
     }
 
-    public static void calculate(GameConfig gameConfig, CurrentMatrix currentMatrix) {
-        Map<String, List<String>> matchedCombo = currentMatrix.getAppliedWinningCombinations();
+    public static void calculate(GameConfig gameConfig, GameState gameState) {
+        Map<String, List<String>> matchedCombo = gameState.getAppliedWinningCombinations();
         Map<String, WinCombination> sameSymbolCombo = gameConfig.getWinCombinations().entrySet().stream()
                 .filter(f -> ScratchCardConstants.SAME_SYMBOLS.equals(f.getValue().getWhen()))
                 .sorted(Comparator.comparing((Map.Entry<String, WinCombination> entry) -> entry.getValue().getCount())
@@ -119,20 +118,20 @@ public class ScratchCardUtils {
                 .filter(f -> ScratchCardConstants.LINEAR_SYMBOLS.equals(f.getValue().getWhen()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
         log.debug("linearSymbolCombo [{}]", linearSymbolCombo);
-        for (String symbol : currentMatrix.getSymbols()) {
+        for (String symbol : gameState.getSymbols()) {
             for (Map.Entry<String, WinCombination> entrySet : sameSymbolCombo.entrySet()) {
-                if (currentMatrix.getSymbolCount(symbol) >= entrySet.getValue().getCount()) {
+                if (gameState.getSymbolCount(symbol) >= entrySet.getValue().getCount()) {
                     matchedCombo.put(symbol, new ArrayList<>(Arrays.asList(entrySet.getKey())));
                     break;
                 }
             }
         }
         log.debug("matchedCombo after same symbol check [{}]", matchedCombo);
-        for (String symbol : currentMatrix.getSymbols()) {
+        for (String symbol : gameState.getSymbols()) {
             List<String> matchedLinearCombo = new ArrayList<>();
             for (Map.Entry<String, WinCombination> entrySet : linearSymbolCombo.entrySet()) {
                 for (List<String> position : entrySet.getValue().getCoveredAreas()) {
-                    if (matchSymbolAgainstLinearCombo(symbol, position, currentMatrix)) {
+                    if (matchSymbolAgainstLinearCombo(symbol, position, gameState)) {
                         matchedLinearCombo.add(entrySet.getKey());
                         break;
                     }
@@ -151,24 +150,24 @@ public class ScratchCardUtils {
         }
         log.debug("matchedCombo after linear check [{}]", matchedCombo);
         if (!matchedCombo.isEmpty()) {
-            calculateReward(currentMatrix, gameConfig);
+            calculateReward(gameState, gameConfig);
         }
     }
 
-    public static void calculateReward(CurrentMatrix currentMatrix, GameConfig gameConfig) {
-        Map<String, List<String>> matchedCombo = currentMatrix.getAppliedWinningCombinations();
-        long betAmt = currentMatrix.getBetAmount();
+    public static void calculateReward(GameState gameState, GameConfig gameConfig) {
+        Map<String, List<String>> matchedCombo = gameState.getAppliedWinningCombinations();
+        long betAmt = gameState.getBetAmount();
         double reward = 0;
         for (Map.Entry<String, List<String>> entry : matchedCombo.entrySet()) {
             double rewardMultiplier = calculateRewardMultiplier(entry.getValue(), gameConfig);
             reward += betAmt * rewardMultiplier;
         }
-        if (currentMatrix.hasBonusSymbol()) {
-            int bonusMultiplier = calculateBonusMultiplier(currentMatrix.getBonusSymbols());
-            int bonusAddition = calculateBonusAddition(currentMatrix.getBonusSymbols());
+        if (gameState.hasBonusSymbol()) {
+            int bonusMultiplier = calculateBonusMultiplier(gameState.getBonusSymbols());
+            int bonusAddition = calculateBonusAddition(gameState.getBonusSymbols());
             reward = reward * bonusMultiplier + bonusAddition;
         }
-        currentMatrix.setReward(reward);
+        gameState.setReward(reward);
 
     }
 
@@ -188,12 +187,12 @@ public class ScratchCardUtils {
     }
 
     public static boolean matchSymbolAgainstLinearCombo(String symbol, List<String> positions,
-            CurrentMatrix currentMatrix) {
+            GameState gameState) {
         for (String position : positions) {
             String[] pos = position.split(":");
             int r = Integer.parseInt(pos[0]);
             int c = Integer.parseInt(pos[1]);
-            if (!symbol.equalsIgnoreCase(currentMatrix.getValue(r, c))) {
+            if (!symbol.equalsIgnoreCase(gameState.getValue(r, c))) {
                 return false;
             }
         }

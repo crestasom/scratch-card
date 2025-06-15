@@ -12,7 +12,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.crestasom.scratchcard.config.GameConfig;
-import com.crestasom.scratchcard.entity.CurrentMatrix;
+import com.crestasom.scratchcard.entity.GameState;
 import com.crestasom.scratchcard.util.ScratchCardUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +25,9 @@ public class MainApp {
     public static void main(String[] args) throws IOException {
         parseCli(args);
         log.debug("load game config");
-        // betAmount = 100;
         GameConfig gameConfig = ScratchCardUtils.loadConfig(configPath);
         log.debug("init matrix");
-        CurrentMatrix matrix = ScratchCardUtils.initMatrix(gameConfig);
+        GameState matrix = ScratchCardUtils.initMatrix(gameConfig);
         matrix.setBetAmount(betAmount);
         log.debug("matrix {}", matrix);
         ScratchCardUtils.addBonusSymbol(gameConfig, matrix);

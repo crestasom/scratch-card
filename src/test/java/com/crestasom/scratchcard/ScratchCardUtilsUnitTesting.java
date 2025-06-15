@@ -23,7 +23,7 @@ import com.crestasom.scratchcard.config.GameConfig;
 import com.crestasom.scratchcard.config.ProbabilitiesConfig;
 import com.crestasom.scratchcard.config.StandardSymbolProbability;
 import com.crestasom.scratchcard.config.SymbolProbability;
-import com.crestasom.scratchcard.entity.CurrentMatrix;
+import com.crestasom.scratchcard.entity.GameState;
 import com.crestasom.scratchcard.util.ScratchCardUtils;
 
 public class ScratchCardUtilsUnitTesting {
@@ -42,7 +42,7 @@ public class ScratchCardUtilsUnitTesting {
         symbols.put("C", 5); // Weight 5
         symbolProbability.setSymbols(symbols);
 
-        CurrentMatrix matrix = new CurrentMatrix(1, 1); // 1x1 matrix
+        GameState matrix = new GameState(1, 1); // 1x1 matrix
         GameConfig config = new GameConfig();
 
         int randValue = 6; // This should select "C" (2+3 = 5, so 6 lands in C range)
@@ -61,7 +61,7 @@ public class ScratchCardUtilsUnitTesting {
         SymbolProbability symbolProbability = new StandardSymbolProbability();
         symbolProbability.setSymbols(Collections.emptyMap());
 
-        CurrentMatrix matrix = new CurrentMatrix(1, 1);
+        GameState matrix = new GameState(1, 1);
         GameConfig config = new GameConfig();
 
         assertThrows(RuntimeException.class,
@@ -126,7 +126,7 @@ public class ScratchCardUtilsUnitTesting {
         bonusProb.setSymbols(bonuses);
         probConfig.setBonusSymbols(bonusProb);
 
-        CurrentMatrix matrix = new CurrentMatrix(rows, cols);
+        GameState matrix = new GameState(rows, cols);
         System.out.println("here");
         // Act
         ScratchCardUtils.addBonusSymbol(gameConfig, matrix);
