@@ -50,7 +50,7 @@ public class ScratchCardUtilsUnitTesting {
         StaticTestUtils.setStaticField(ScratchCardUtils.class, "random", new RandomStub(randValue));
 
         // Act
-        ScratchCardUtils.initCurrentSymbol(symbolProbability, matrix, config, 0, 0);
+        ScratchCardUtils.initCurrentSymbol(symbolProbability, matrix, config, 0, 0, false);
 
         // Assert
         assertEquals("C", matrix.getValue(0, 0));
@@ -65,7 +65,7 @@ public class ScratchCardUtilsUnitTesting {
         GameConfig config = new GameConfig();
 
         assertThrows(RuntimeException.class,
-                () -> ScratchCardUtils.initCurrentSymbol(symbolProbability, matrix, config, 0, 0));
+                () -> ScratchCardUtils.initCurrentSymbol(symbolProbability, matrix, config, 0, 0, false));
     }
 
     @Test
