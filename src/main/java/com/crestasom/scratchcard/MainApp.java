@@ -33,10 +33,7 @@ public class MainApp {
         log.debug("matrix {}", matrix);
         ScratchCardUtils.addBonusSymbol(gameConfig, matrix);
         log.debug("matrix after adding bonus {}", matrix);
-        log.debug("before matrix [{}]", matrix);
         ScratchCardUtils.calculate(gameConfig, matrix);
-        // ScratchCardUtils.calculateReward(matrix, gameConfig);
-
         System.out.println(matrix);
 
     }

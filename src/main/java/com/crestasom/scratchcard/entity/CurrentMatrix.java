@@ -108,8 +108,8 @@ public class CurrentMatrix {
         return !bonusSymbols.isEmpty();
     }
 
-    public double getReward() {
-        return reward;
+    public long getReward() {
+        return (long) reward;
     }
 
     public void setReward(double reward) {
@@ -130,6 +130,14 @@ public class CurrentMatrix {
 
     public void setAppliedWinningCombinations(Map<String, List<String>> appliedWinningCombinations) {
         this.appliedWinningCombinations = appliedWinningCombinations;
+    }
+
+    public void setMatrixValues(String[][] matrixValues) {
+        this.matrixValues = matrixValues;
+    }
+
+    public void setBonusSymbols(List<String> bonusSymbols) {
+        this.bonusSymbols = bonusSymbols;
     }
 
 }
