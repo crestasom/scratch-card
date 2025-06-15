@@ -11,8 +11,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.crestasom.scratchcard.config.GameConfig;
 import com.crestasom.scratchcard.entity.GameState;
+import com.crestasom.scratchcard.entity.config.GameConfig;
 import com.crestasom.scratchcard.util.ScratchCardUtils;
 
 import lombok.extern.slf4j.Slf4j;

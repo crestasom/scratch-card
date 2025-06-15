@@ -8,8 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.crestasom.scratchcard.config.GameConfig;
 import com.crestasom.scratchcard.entity.GameState;
+import com.crestasom.scratchcard.entity.config.GameConfig;
 import com.crestasom.scratchcard.util.ScratchCardUtils;
 
 public class ScratchCardUtilsTest {

@@ -113,7 +113,7 @@ public class GameState {
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("cannot create to string for current matrix class");
+            throw new RuntimeException("cannot create to string for game state class");
         }
     }
 }

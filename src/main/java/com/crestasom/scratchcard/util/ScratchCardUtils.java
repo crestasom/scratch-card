@@ -14,11 +14,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import com.crestasom.scratchcard.config.ConfigReader;
-import com.crestasom.scratchcard.config.GameConfig;
-import com.crestasom.scratchcard.config.ScratchCardConstants;
-import com.crestasom.scratchcard.config.SymbolProbability;
-import com.crestasom.scratchcard.config.WinCombination;
 import com.crestasom.scratchcard.entity.GameState;
+import com.crestasom.scratchcard.entity.config.GameConfig;
+import com.crestasom.scratchcard.entity.config.ScratchCardConstants;
+import com.crestasom.scratchcard.entity.config.SymbolProbability;
+import com.crestasom.scratchcard.entity.config.WinCombination;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;

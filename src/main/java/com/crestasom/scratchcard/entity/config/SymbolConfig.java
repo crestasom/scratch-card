@@ -1,5 +1,5 @@
 
-package com.crestasom.scratchcard.config;
+package com.crestasom.scratchcard.entity.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

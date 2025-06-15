@@ -18,12 +18,12 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-import com.crestasom.scratchcard.config.BonusSymbolProbability;
-import com.crestasom.scratchcard.config.GameConfig;
-import com.crestasom.scratchcard.config.ProbabilitiesConfig;
-import com.crestasom.scratchcard.config.StandardSymbolProbability;
-import com.crestasom.scratchcard.config.SymbolProbability;
 import com.crestasom.scratchcard.entity.GameState;
+import com.crestasom.scratchcard.entity.config.BonusSymbolProbability;
+import com.crestasom.scratchcard.entity.config.GameConfig;
+import com.crestasom.scratchcard.entity.config.ProbabilitiesConfig;
+import com.crestasom.scratchcard.entity.config.StandardSymbolProbability;
+import com.crestasom.scratchcard.entity.config.SymbolProbability;
 import com.crestasom.scratchcard.util.ScratchCardUtils;
 
 public class ScratchCardUtilsUnitTesting {

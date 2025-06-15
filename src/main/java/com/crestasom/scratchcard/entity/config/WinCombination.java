@@ -1,6 +1,6 @@
 
 
-package com.crestasom.scratchcard.config;
+package com.crestasom.scratchcard.entity.config;
 
 import java.util.List;
 
