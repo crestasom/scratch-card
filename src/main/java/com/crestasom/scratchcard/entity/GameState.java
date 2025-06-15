@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 
 public class GameState {
@@ -18,8 +19,6 @@ public class GameState {
     private String[][] matrix;
     @JsonIgnore
     private Map<String, Integer> symbolCounts;
-    // @JsonIgnore
-    @JsonProperty(value = "applied_bonus_symbol")
     private List<String> bonusSymbols;
     private double reward;
     @JsonIgnore
@@ -57,18 +56,22 @@ public class GameState {
         return symbolCounts.getOrDefault(symbol, 0);
     }
 
-
     @JsonIgnore
     public Set<String> getSymbols() {
         return symbolCounts.keySet();
     }
 
-    public void addBonusSymbol(String symbol) {
-        bonusSymbols.add(symbol);
-    }
-
+    @JsonIgnore
     public List<String> getBonusSymbols() {
         return bonusSymbols;
+    }
+
+    @JsonProperty(value = "applied_bonus_symbol")
+    public String getBonusSymbolForJson() {
+        return String.join(",", bonusSymbols);
+    }
+    public void addBonusSymbol(String symbol) {
+        bonusSymbols.add(symbol);
     }
 
     public boolean hasBonusSymbol() {
@@ -110,6 +113,7 @@ public class GameState {
     @Override
     public String toString() {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.WRITE_SELF_REFERENCES_AS_NULL);
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
         } catch (JsonProcessingException e) {

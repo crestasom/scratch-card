@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-import com.crestasom.scratchcard.config.ConfigReader;
 import com.crestasom.scratchcard.entity.GameState;
 import com.crestasom.scratchcard.entity.config.GameConfig;
 import com.crestasom.scratchcard.entity.config.ScratchCardConstants;

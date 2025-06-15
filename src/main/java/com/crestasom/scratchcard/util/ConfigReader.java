@@ -1,5 +1,5 @@
 
-package com.crestasom.scratchcard.config;
+package com.crestasom.scratchcard.util;
 
 import java.io.IOException;
 import java.io.InputStream;
