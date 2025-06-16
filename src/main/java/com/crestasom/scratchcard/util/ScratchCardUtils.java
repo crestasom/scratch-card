@@ -117,27 +117,16 @@ public class ScratchCardUtils {
                 .filter(f -> ScratchCardConstants.LINEAR_SYMBOLS.equals(f.getValue().getWhen()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
         log.debug("linearSymbolCombo [{}]", linearSymbolCombo);
+        
         for (String symbol : gameState.getSymbols()) {
-            for (Map.Entry<String, WinCombination> entrySet : sameSymbolCombo.entrySet()) {
-                if (gameState.getSymbolCount(symbol) >= entrySet.getValue().getCount()) {
-                    matchedCombo.put(symbol, new ArrayList<>(Arrays.asList(entrySet.getKey())));
-                    break;
-                }
-            }
+            sameSymbolCombo.entrySet().stream()
+            .filter(e -> gameState.getSymbolCount(symbol) >= e.getValue().getCount())
+            .findFirst()
+                    .ifPresent(e -> matchedCombo.put(symbol, new ArrayList<>(Arrays.asList(e.getKey()))));
         }
         log.debug("matchedCombo after same symbol check [{}]", matchedCombo);
         for (String symbol : gameState.getSymbols()) {
-            List<String> matchedLinearCombo = new ArrayList<>();
-            for (Map.Entry<String, WinCombination> entrySet : linearSymbolCombo.entrySet()) {
-                for (List<String> position : entrySet.getValue().getCoveredAreas()) {
-                    if (matchSymbolAgainstLinearCombo(symbol, position, gameState)) {
-                        matchedLinearCombo.add(entrySet.getKey());
-                        break;
-                    }
-                }
-            }
-
-
+            List<String> matchedLinearCombo = matchLinearCombo(linearSymbolCombo, symbol, gameState);
             if (matchedLinearCombo != null && matchedLinearCombo.size() > 0) {
                 List<String> currentVal = matchedCombo.get(symbol);
                 if (currentVal == null) {
@@ -153,6 +142,28 @@ public class ScratchCardUtils {
         }
     }
 
+   
+    private static List<String> matchLinearCombo(Map<String, WinCombination> linearSymbolCombo, String symbol,
+            GameState gameState) {
+        List<String> matchedLinearCombo = new ArrayList<>();
+        for (Map.Entry<String, WinCombination> entrySet : linearSymbolCombo.entrySet()) {
+            for (List<String> position : entrySet.getValue().getCoveredAreas()) {
+
+                boolean allMatch = position.stream().allMatch(p -> {
+                    String[] pos = p.split(":");
+                    return symbol
+                            .equalsIgnoreCase(gameState.getValue(Integer.parseInt(pos[0]), Integer.parseInt(pos[1])));
+                });
+                if (allMatch) {
+                    matchedLinearCombo.add(entrySet.getKey());
+                    break;
+                }
+            }
+        }
+        return matchedLinearCombo;
+        
+    }
+
     public static void calculateReward(GameState gameState, GameConfig gameConfig) {
         Map<String, List<String>> matchedCombo = gameState.getAppliedWinningCombinations();
         long betAmt = gameState.getBetAmount();
@@ -162,10 +173,19 @@ public class ScratchCardUtils {
             reward += betAmt * rewardMultiplier;
         }
         if (gameState.hasBonusSymbol()) {
-            int bonusMultiplier = calculateBonusMultiplier(gameState.getBonusSymbols());
-            int bonusAddition = calculateBonusAddition(gameState.getBonusSymbols());
-            reward = reward * bonusMultiplier + bonusAddition;
+
+            int multiplier = 1;
+            int addition = 0;
+            for (String b : gameState.getBonusSymbols()) {
+                if (b.endsWith("x")) {
+                    multiplier *= Integer.parseInt(b.replace("x", ""));
+                } else if (b.startsWith("+")) {
+                    addition += Integer.parseInt(b.substring(1));
+                }
+            }
+            reward = reward * multiplier + addition;
         }
+
         gameState.setReward(reward);
 
     }
@@ -173,29 +193,5 @@ public class ScratchCardUtils {
     public static double calculateRewardMultiplier(List<String> winCombo, GameConfig config) {
         return winCombo.stream().map(win -> config.getWinCombinations().get(win).getRewardMultiplier()).reduce(1.0,
                 (a, b) -> a * b);
-    }
-
-    public static int calculateBonusMultiplier(List<String> bonusSymbols) {
-        return bonusSymbols.stream().filter(bonus -> bonus.endsWith("x"))
-                .mapToInt(b -> Integer.parseInt(b.replace("x", ""))).reduce(1, (a, b) -> a * b);
-    }
-
-    public static int calculateBonusAddition(List<String> bonusSymbols) {
-        return bonusSymbols.stream().filter(bonus -> bonus.startsWith("+"))
-                .mapToInt(bonus -> Integer.parseInt(bonus.substring(1))).reduce(0, (a, b) -> a + b);
-    }
-
-    public static boolean matchSymbolAgainstLinearCombo(String symbol, List<String> positions,
-            GameState gameState) {
-        for (String position : positions) {
-            String[] pos = position.split(":");
-            int r = Integer.parseInt(pos[0]);
-            int c = Integer.parseInt(pos[1]);
-            if (!symbol.equalsIgnoreCase(gameState.getValue(r, c))) {
-                return false;
-            }
-        }
-        return true;
-
     }
 }
